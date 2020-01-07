@@ -1,9 +1,9 @@
-require('dotenv').config();
+require('dotenv').config()
 const express = require('express')
 const helmet = require('helmet')
 const morgan = require('morgan')
 const cors = require('cors')
-const POKEDEX = require('./moviedex.json')
+const MOVIEDEX = require('./moviedex.json')
 
 const app = express()
 
@@ -12,36 +12,32 @@ app.use(helmet())
 app.use(cors())
 
 app.use(function validateBearerToken(req, res, next) {
-    const apiToken = process.env.API_TOKEN;
-    const authToken = req.get('Authorization');
-
+    const apiToken = process.env.API_TOKEN
+    const authToken = req.get('Authorization')
     if (!authToken || authToken.split(' ')[1] !== apiToken) {
-        return res.status(401).json({ error: 'Unauthorized request' });
-    };
-
+        return res.status(401).json({ error: 'Unauthorized request' })
+    }
     next()
 });
 
-function handleGetTypes(req, res) {
-    res.json(validTypes);
-};
-
-app.get('/types', handleGetTypes);
-
-function handleGetPokemon(req, res) {
-    res.send('Hello Pokemon!');
-};
-
-app.get('/pokemon', function handleGetPokemon(req, res) {
-    let response = POKEDEX.pokemon;
-
-    // filter our pokemon by name if name query param is present
-    if (req.query.name) {
-        response = response.filter(pokemon => 
-            pokemon.type.includes(req.query.type)
+app.get('/movie', function handleGetMovie(req, res) {
+    let response = MOVIEDEX;
+    if (req.query.genre) {
+        response = response.filter(movie => 
+            movie.genre.toLowerCase().includes(req.query.genre.toLowerCase())
         );
-    };
-    res.json(response);
+    }
+    if (req.query.avg_vote) {
+        response = response.filter(movie =>
+            Number(movie.avg_vote) >= Number(req.query.avg_vote)
+        )
+    }
+    if (req.query.country) {
+        response = response.filter(movie =>
+            movie.country.toLowerCase().includes(req.query.country.toLowerCase())
+        )
+    }
+    res.json(response)
 });
 
 const PORT = 8000;
